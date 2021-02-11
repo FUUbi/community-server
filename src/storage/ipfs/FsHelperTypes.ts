@@ -4,7 +4,7 @@ import type {
 } from 'fs';
 
 /* Figure out how to import BufferEncoding from node/globals  */
-type BufferEncoding =
+export type BufferEncoding =
     'ascii' | 'utf8' | 'utf-8' | 'utf16le' | 'ucs2' |
     'ucs-2' | 'base64' | 'latin1' | 'binary' | 'hex';
 
@@ -34,7 +34,7 @@ export type CreateWriteStream = (path: PathLike, options?: string | {
 // The used funcitons which the filesystem accessors use
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-interface FsPromises {
+export interface FsPromises {
 
   /**
    * Asynchronous lstat(2) - Get file status. Does not dereference symbolic links.
