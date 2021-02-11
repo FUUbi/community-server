@@ -1,6 +1,5 @@
 import { rmdirSync } from 'fs';
 import { Readable } from 'stream';
-import type CID from 'cids';
 import { create } from 'ipfs';
 import type { IPFS } from 'ipfs';
 import { readableToString } from '../../src';
@@ -16,17 +15,25 @@ class IPFSHelper {
   }
 
   public async write(file: { path: string; content: Readable }) {
-    const node = await this.node;
-    return await node.add(file);
+    const mfs = await this.mfs();
+    return mfs.write(file.path, file.content, { create: true });
   }
 
-  public async read(path: CID) {
-    const node = await this.node;
-    return readableToString(Readable.from(node.cat(path)));
+  public async read(path: string) {
+    const mfs = await this.mfs();
+    return readableToString(Readable.from(mfs.read(path)));
   }
 
   public async stop() {
     return (await this.node).stop();
+  }
+
+  public async stats(path: string) {
+    return (await this.mfs()).stat(path);
+  }
+
+  private async mfs() {
+    return (await this.node).files;
   }
 }
 
@@ -39,12 +46,11 @@ describe('A IPFS Helper', (): void => {
 
   it('should handle readable streams', async() => {
     const path = '/hello1.txt';
-    const rest = await ipfsHelper.write({
+    await ipfsHelper.write({
       path,
       content: Readable.from([ 'hey' ]),
     });
-    // Expect(rest.path).toBe(path);
-    const readResult = await ipfsHelper.read(rest.cid);
+    const readResult = await ipfsHelper.read(path);
     expect(readResult).toBe('hey');
   });
 
