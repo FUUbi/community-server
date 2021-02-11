@@ -1,5 +1,6 @@
 import type { Stats } from 'fs';
 import { createWriteStream, createReadStream, promises as fsPromises } from 'fs';
+import type { FileHandle } from 'fs/promises';
 import type { Readable } from 'stream';
 import { DataFactory } from 'n3';
 import type { NamedNode, Quad } from 'rdf-js';
@@ -25,9 +26,13 @@ import type { DataAccessor } from './DataAccessor';
  */
 export class FileDataAccessor implements DataAccessor {
   private readonly resourceMapper: FileIdentifierMapper;
+  protected readonly fsPromises: FileHandle;
 
   public constructor(resourceMapper: FileIdentifierMapper) {
     this.resourceMapper = resourceMapper;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    this.fsPromises = fsPromises;
   }
 
   /**
