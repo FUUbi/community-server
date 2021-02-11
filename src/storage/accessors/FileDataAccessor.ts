@@ -18,6 +18,7 @@ import { parseQuads, pushQuad, serializeQuads } from '../../util/QuadUtil';
 import { generateContainmentQuads, generateResourceQuads } from '../../util/ResourceUtil';
 import { toLiteral } from '../../util/TermUtil';
 import { CONTENT_TYPE, DC, LDP, POSIX, RDF, XSD } from '../../util/Vocabularies';
+import type { CreateReadStream, CreateWriteStream } from '../ipfs/FsHelperTypes';
 import type { FileIdentifierMapper, ResourceLink } from '../mapping/FileIdentifierMapper';
 import type { DataAccessor } from './DataAccessor';
 
@@ -27,12 +28,16 @@ import type { DataAccessor } from './DataAccessor';
 export class FileDataAccessor implements DataAccessor {
   private readonly resourceMapper: FileIdentifierMapper;
   protected readonly fsPromises: FileHandle;
+  protected readonly createReadStream: CreateReadStream;
+  protected readonly createWriteStream: CreateWriteStream;
 
   public constructor(resourceMapper: FileIdentifierMapper) {
     this.resourceMapper = resourceMapper;
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
     this.fsPromises = fsPromises;
+    this.createReadStream = createReadStream;
+    this.createWriteStream = createWriteStream;
   }
 
   /**
