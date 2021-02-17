@@ -8,17 +8,7 @@ export type BufferEncoding =
     'ascii' | 'utf8' | 'utf-8' | 'utf16le' | 'ucs2' |
     'ucs-2' | 'base64' | 'latin1' | 'binary' | 'hex';
 
-export type CreateReadStream = (path: PathLike, options?: string | {
-  flags?: string;
-  encoding?: BufferEncoding;
-  fd?: number;
-  mode?: number;
-  autoClose?: boolean;
-  emitClose?: boolean;
-  start?: number;
-  end?: number;
-  highWaterMark?: number;
-}) => ReadStream;
+export type CreateReadStream = (path: PathLike | string) => ReadStream;
 
 export type CreateWriteStream = (path: PathLike, options?: string | {
   flags?: string;

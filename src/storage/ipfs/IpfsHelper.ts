@@ -1,25 +1,12 @@
-import type {
-  BaseEncodingOptions,
-  MakeDirectoryOptions,
-  Mode,
-  PathLike,
-  ReadStream,
-  RmDirOptions,
-  Stats,
-  WriteStream,
-} from 'fs';
+import type { Stats } from 'fs';
 import { Readable } from 'stream';
 import { create } from 'ipfs';
 import type { IPFS } from 'ipfs';
-import { NotImplementedHttpError } from '../../util/errors/NotImplementedHttpError';
-import { readableToString } from '../../util/StreamUtil';
-import type { FsPromises, BufferEncoding } from './FsHelperTypes';
+import type { SystemError } from '../../util/errors/SystemError';
 
-/* eslint-disable  @typescript-eslint/explicit-function-return-type  */
-/* eslint-disable  mocha/valid-test-description  */
-/* eslint-disable   @typescript-eslint/no-unused-vars */
-/* eslint-disable   @typescript-eslint/ban-ts-comment */
-export class IPFSHelper implements FsPromises {
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
+
+export class IPFSHelper {
   private readonly node: Promise<IPFS>;
 
   public constructor(config: { repo: string }) {
@@ -28,12 +15,12 @@ export class IPFSHelper implements FsPromises {
 
   public async write(file: { path: string; content: Readable }) {
     const mfs = await this.mfs();
-    return mfs.write(file.path, file.content, { create: true });
+    return mfs.write(file.path, file.content, { create: true, mtime: new Date() });
   }
 
   public async read(path: string) {
     const mfs = await this.mfs();
-    return readableToString(Readable.from(mfs.read(path)));
+    return Readable.from(mfs.read(path));
   }
 
   public async stop() {
@@ -48,37 +35,81 @@ export class IPFSHelper implements FsPromises {
     return (await this.node).files;
   }
 
-  private createWriteStream(path: PathLike): WriteStream {
-    throw NotImplementedHttpError;
+  public async lstat(path: string): Promise<Stats> {
+    try {
+      const mfs = await this.mfs();
+      const stats = await mfs.stat(path);
+
+      if (stats.mode) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        return {
+          isDirectory: (): boolean => stats.type === 'directory',
+          isFile: (): boolean => stats.type === 'file',
+          mode: stats.mode,
+          // I dont know yet why the date is not set by mfs.stat(x)
+          // eslint-disable-next-line no-mixed-operators
+          mtime: stats.mtime ? new Date(stats.mtime.secs * 1000 + stats.mtime.nsecs / 1000) : new Date(),
+          size: stats.size,
+        };
+      }
+      throw new Error('error');
+    } catch (error: unknown) {
+      if ((error as any).code && (error as any).code === 'ERR_NOT_FOUND') {
+        const sysError = error as SystemError;
+        sysError.code = 'ENOENT';
+        sysError.syscall = 'stat';
+        sysError.errno = -2;
+        sysError.path = path;
+        throw sysError;
+      }
+      throw error;
+    }
   }
 
-  private createReadStream(path: PathLike): ReadStream {
-    throw NotImplementedHttpError;
+  public async mkdir(path: string): Promise<void> {
+    try {
+      const mfs = await this.mfs();
+      await mfs.mkdir(path);
+    } catch (error: unknown) {
+      if ((error as any).code && (error as any).code === 'ERR_LOCK_EXISTS') {
+        const sysError = error as SystemError;
+        sysError.code = 'EEXIST';
+        sysError.syscall = 'mkdir';
+        sysError.errno = -17;
+        sysError.path = path;
+        throw sysError;
+      }
+    }
   }
 
-  public async lstat(path: PathLike): Promise<Stats> {
-    throw NotImplementedHttpError;
+  public async readdir(path: string): Promise<string[]> {
+    const mfs = await this.mfs();
+    const entries: string[] = [];
+    for await (const entry of mfs.ls(path)) {
+      entries.push(entry.name);
+    }
+    return entries;
   }
 
-  public async mkdir(
-    path: PathLike,
-    options: Mode | (MakeDirectoryOptions & { recursive?: false }) | null | undefined,
-  ): Promise<void> {
-    return Promise.resolve();
+  public async rmdir(path: string): Promise<void> {
+    const mfs = await this.mfs();
+    return mfs.rm(path, { recursive: true });
   }
 
-  public async readdir(
-    path: PathLike,
-    options: (BaseEncodingOptions & { withFileTypes?: false }) | BufferEncoding | null | undefined,
-  ): Promise<string[]> {
-    return Promise.resolve([]);
-  }
-
-  public async rmdir(path: PathLike, options: RmDirOptions | undefined): Promise<void> {
-    return Promise.resolve();
-  }
-
-  public async unlink(path: PathLike): Promise<void> {
-    return Promise.resolve();
+  public async unlink(path: string): Promise<void> {
+    try {
+      const mfs = await this.mfs();
+      await mfs.rm(path);
+    } catch (error: unknown) {
+      if ((error as any).code && (error as any).code === 'ERR_NOT_FOUND') {
+        const sysError = error as SystemError;
+        sysError.code = 'ENOENT';
+        sysError.syscall = 'unlink';
+        sysError.errno = -2;
+        sysError.path = path;
+        throw sysError;
+      }
+    }
   }
 }
