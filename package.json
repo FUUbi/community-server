@@ -62,11 +62,7 @@
     "version": "manual-git-changelog onversion",
     "watch": "nodemon --watch \"dist/**/*.js\" --exec npm start"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run build && npm run lint && npm run test:unit && npm run test:integration"
-    }
-  },
+
   "files": [
     "bin",
     "dist",
