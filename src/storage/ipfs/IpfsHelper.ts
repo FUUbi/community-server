@@ -9,7 +9,7 @@ import type { SystemError } from '../../util/errors/SystemError';
 export class IPFSHelper {
   private readonly node: Promise<IPFS>;
 
-  public constructor(config: { repo: string }) {
+  public constructor(config: { repo: string } = { repo: '/tmp/ipfs' }) {
     this.node = create(config);
   }
 

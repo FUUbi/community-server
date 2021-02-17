@@ -131,6 +131,8 @@ export * from './storage/accessors/DataAccessor';
 export * from './storage/accessors/FileDataAccessor';
 export * from './storage/accessors/InMemoryDataAccessor';
 export * from './storage/accessors/SparqlDataAccessor';
+export * from './storage/accessors/IpfsAccessor';
+export * from './storage/ipfs/IpfsHelper';
 
 // Storage/Conversion
 export * from './storage/conversion/ChainedConverter';
