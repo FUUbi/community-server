@@ -116,6 +116,11 @@ export const XSD = createUriAndTermNamespace('http://www.w3.org/2001/XMLSchema#'
   'integer',
 );
 
+export const AS = createUriAndTermNamespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+  // https://www.w3.org/TR/activitystreams-vocabulary/#dfn-url
+  'url',
+);
+
 // Alias for commonly used types
 export const CONTENT_TYPE = MA.format;
 export const CONTENT_TYPE_TERM = MA.terms.format;
