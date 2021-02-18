@@ -17,7 +17,7 @@ import { parseQuads, pushQuad, serializeQuads } from '../../util/QuadUtil';
 import { generateContainmentQuads, generateResourceQuads } from '../../util/ResourceUtil';
 import { toLiteral } from '../../util/TermUtil';
 import { CONTENT_TYPE, DC, LDP, POSIX, RDF, XSD } from '../../util/Vocabularies';
-import type { IPFSHelper } from '../ipfs/IpfsHelper';
+import type { IPFSHelper, IPFSStats } from '../ipfs/IpfsHelper';
 import type { FileIdentifierMapper, ResourceLink } from '../mapping/FileIdentifierMapper';
 import type { DataAccessor } from './DataAccessor';
 
@@ -148,7 +148,7 @@ export class IpfsAccessor implements DataAccessor {
    * @throws NotFoundHttpError
    * If the file/folder doesn't exist.
    */
-  private async getStats(path: string): Promise<Stats> {
+  private async getStats(path: string): Promise<IPFSStats> {
     try {
       return await this.ipfsHelper.lstat(path);
     } catch (error: unknown) {
@@ -181,7 +181,7 @@ export class IpfsAccessor implements DataAccessor {
    * @param link - Path related metadata.
    * @param stats - Stats object of the corresponding file.
    */
-  private async getFileMetadata(link: ResourceLink, stats: Stats):
+  private async getFileMetadata(link: ResourceLink, stats: IPFSStats):
   Promise<RepresentationMetadata> {
     return (await this.getBaseMetadata(link, stats, false))
       .set(CONTENT_TYPE, link.contentType);
@@ -194,7 +194,7 @@ export class IpfsAccessor implements DataAccessor {
    * @param link - Path related metadata.
    * @param stats - Stats object of the corresponding directory.
    */
-  private async getDirectoryMetadata(link: ResourceLink, stats: Stats):
+  private async getDirectoryMetadata(link: ResourceLink, stats: IPFSStats):
   Promise<RepresentationMetadata> {
     return (await this.getBaseMetadata(link, stats, true))
       .addQuads(await this.getChildMetadataQuads(link));
@@ -245,7 +245,7 @@ export class IpfsAccessor implements DataAccessor {
    * @param stats - Stats objects of the corresponding directory.
    * @param isContainer - If the path points to a container (directory) or not.
    */
-  private async getBaseMetadata(link: ResourceLink, stats: Stats, isContainer: boolean):
+  private async getBaseMetadata(link: ResourceLink, stats: IPFSStats, isContainer: boolean):
   Promise<RepresentationMetadata> {
     const metadata = new RepresentationMetadata(link.identifier)
       .addQuads(await this.getRawMetadata(link.identifier));
@@ -326,13 +326,14 @@ export class IpfsAccessor implements DataAccessor {
    * @param subject - Subject for the new quads.
    * @param stats - Stats of the file/directory corresponding to the resource.
    */
-  private generatePosixQuads(subject: NamedNode, stats: Stats): Quad[] {
+  private generatePosixQuads(subject: NamedNode, stats: IPFSStats): Quad[] {
     const quads: Quad[] = [];
     pushQuad(quads, subject, POSIX.terms.size, toLiteral(stats.size, XSD.terms.integer));
     pushQuad(quads, subject, DC.terms.modified, toLiteral(stats.mtime.toISOString(), XSD.terms.dateTime));
     pushQuad(quads, subject, POSIX.terms.mtime, toLiteral(
       Math.floor(stats.mtime.getTime() / 1000), XSD.terms.integer,
     ));
+    // PushQuad(quads, subject, AS.url, stats.);
     return quads;
   }
 

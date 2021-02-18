@@ -3,17 +3,20 @@ import { Readable } from 'stream';
 import { create } from 'ipfs';
 import type { IPFS } from 'ipfs';
 import type { SystemError } from '../../util/errors/SystemError';
+import { StatsBase } from 'fs';
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
 export class IPFSHelper {
   private readonly node: Promise<IPFS>;
 
-  public constructor(config: { repo: string } = { repo: '/tmp/ipfs' }) {
+  public constructor(config: { repo: string }) {
     this.node = create(config);
   }
 
   public async write(file: { path: string; content: Readable }) {
+    // eslint-disable-next-line no-console
+    console.log(file.path);
     const mfs = await this.mfs();
     return mfs.write(file.path, file.content, { create: true, mtime: new Date() });
   }
@@ -35,7 +38,7 @@ export class IPFSHelper {
     return (await this.node).files;
   }
 
-  public async lstat(path: string): Promise<Stats> {
+  public async lstat(path: string): Promise<IPFSStats> {
     try {
       const mfs = await this.mfs();
       const stats = await mfs.stat(path);
@@ -56,11 +59,11 @@ export class IPFSHelper {
       throw new Error('error');
     } catch (error: unknown) {
       if ((error as any).code && (error as any).code === 'ERR_NOT_FOUND') {
-        const sysError = error as SystemError;
-        sysError.code = 'ENOENT';
-        sysError.syscall = 'stat';
-        sysError.errno = -2;
-        sysError.path = path;
+        const sysError: SystemError = { ...(error as SystemError),
+          code: 'ENOENT',
+          syscall: 'stat',
+          errno: -2,
+          path };
         throw sysError;
       }
       throw error;
@@ -73,11 +76,11 @@ export class IPFSHelper {
       await mfs.mkdir(path);
     } catch (error: unknown) {
       if ((error as any).code && (error as any).code === 'ERR_LOCK_EXISTS') {
-        const sysError = error as SystemError;
-        sysError.code = 'EEXIST';
-        sysError.syscall = 'mkdir';
-        sysError.errno = -17;
-        sysError.path = path;
+        const sysError: SystemError = { ...(error as SystemError),
+          code: 'EEXIST',
+          syscall: 'mkdir',
+          errno: -17,
+          path };
         throw sysError;
       }
     }
@@ -103,13 +106,18 @@ export class IPFSHelper {
       await mfs.rm(path);
     } catch (error: unknown) {
       if ((error as any).code && (error as any).code === 'ERR_NOT_FOUND') {
-        const sysError = error as SystemError;
-        sysError.code = 'ENOENT';
-        sysError.syscall = 'unlink';
-        sysError.errno = -2;
-        sysError.path = path;
+        const sysError: SystemError = { ...(error as SystemError),
+          code: 'ENOENT',
+          syscall: 'unlink',
+          errno: -2,
+          path };
         throw sysError;
       }
     }
   }
 }
+
+export interface IPFSStats extends StatsBase<number> {
+  cid: string;
+}
+
