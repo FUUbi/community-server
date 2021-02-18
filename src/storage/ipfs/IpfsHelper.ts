@@ -1,10 +1,9 @@
-import type { Stats } from 'fs';
+import type { StatsBase } from 'fs';
 import { Readable } from 'stream';
+import type CID from 'cids';
 import { create } from 'ipfs';
 import type { IPFS } from 'ipfs';
 import type { SystemError } from '../../util/errors/SystemError';
-import { StatsBase } from 'fs';
-
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
 export class IPFSHelper {
@@ -54,6 +53,7 @@ export class IPFSHelper {
           // eslint-disable-next-line no-mixed-operators
           mtime: stats.mtime ? new Date(stats.mtime.secs * 1000 + stats.mtime.nsecs / 1000) : new Date(),
           size: stats.size,
+          cid: stats.cid,
         };
       }
       throw new Error('error');
@@ -118,6 +118,6 @@ export class IPFSHelper {
 }
 
 export interface IPFSStats extends StatsBase<number> {
-  cid: string;
+  cid: CID;
 }
 
