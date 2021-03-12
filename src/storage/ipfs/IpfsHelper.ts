@@ -5,12 +5,23 @@ import { create } from 'ipfs';
 import type { IPFS } from 'ipfs';
 import type { SystemError } from '../../util/errors/SystemError';
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
+/* eslint-disable @typescript-eslint/naming-convention */
 
 export class IPFSHelper {
   private readonly node: Promise<IPFS>;
 
-  public constructor(config: { repo: string }) {
-    this.node = create(config);
+  public constructor(options: { repo: string }) {
+    // (options as any).config = {
+    // Bootstrap: [ '/ip4/127.0.0.1/tcp/4002/ipfs/Qmd6r6juE6UAx1TCZUdF9Csz4T9BAJqUgGHT93uGY1ypCk' ],
+    // Addresses: {
+    //     API: '/ip4/127.0.0.1/tcp/5003',
+    //     Gateway: '/ip4/127.0.0.1/tcp/8083',
+    //
+    // },
+    // };
+    // // eslint-disable-next-line no-console
+    // console.log(options);
+    this.node = create(options);
   }
 
   public async write(file: { path: string; content: Readable }) {

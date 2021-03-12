@@ -16,7 +16,7 @@
     {
       "@id": "urn:solid-server:default:IPFSHelper",
       "@type": "IPFSHelper",
-      "IPFSHelper:_config_repo": "/tmp/solid-ipfs"
+      "IPFSHelper:_options_repo": "/tmp/solid-ipfs1"
     },
     {
       "@id": "urn:solid-server:default:IpfsAccessor",
