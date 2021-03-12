@@ -1,4 +1,3 @@
-import type { Stats } from 'fs';
 import type { Readable } from 'stream';
 import { DataFactory } from 'n3';
 import type { NamedNode, Quad } from 'rdf-js';
@@ -16,7 +15,7 @@ import { isContainerIdentifier, joinFilePath } from '../../util/PathUtil';
 import { parseQuads, pushQuad, serializeQuads } from '../../util/QuadUtil';
 import { generateContainmentQuads, generateResourceQuads } from '../../util/ResourceUtil';
 import { toLiteral } from '../../util/TermUtil';
-import { CONTENT_TYPE, DC, LDP, POSIX, RDF, XSD } from '../../util/Vocabularies';
+import { AS, CONTENT_TYPE, DC, LDP, POSIX, RDF, XSD } from '../../util/Vocabularies';
 import type { IPFSHelper, IPFSStats } from '../ipfs/IpfsHelper';
 import type { FileIdentifierMapper, ResourceLink } from '../mapping/FileIdentifierMapper';
 import type { DataAccessor } from './DataAccessor';
@@ -251,6 +250,7 @@ export class IpfsAccessor implements DataAccessor {
       .addQuads(await this.getRawMetadata(link.identifier));
     metadata.addQuads(generateResourceQuads(metadata.identifier as NamedNode, isContainer));
     metadata.addQuads(this.generatePosixQuads(metadata.identifier as NamedNode, stats));
+    metadata.addQuads(this.generateIpfsQuads(metadata.identifier as NamedNode, stats));
     return metadata;
   }
 
@@ -310,6 +310,7 @@ export class IpfsAccessor implements DataAccessor {
       const subject = DataFactory.namedNode(childLink.identifier.path);
       quads.push(...generateResourceQuads(subject, childStats.isDirectory()));
       quads.push(...this.generatePosixQuads(subject, childStats));
+      quads.push(...this.generateIpfsQuads(subject, childStats));
       childURIs.push(childLink.identifier.path);
     }
 
@@ -366,5 +367,11 @@ export class IpfsAccessor implements DataAccessor {
    */
   protected async writeDataFile(path: string, data: Readable): Promise<void> {
     return this.ipfsHelper.write({ path, content: data });
+  }
+
+  private generateIpfsQuads(subject: NamedNode, stats: IPFSStats): Quad[] {
+    const quads: Quad[] = [];
+    pushQuad(quads, subject, AS.url, stats.cid.toString());
+    return quads;
   }
 }
