@@ -1,4 +1,5 @@
 import type { Readable } from 'stream';
+import { literal } from '@rdfjs/data-model';
 import { DataFactory } from 'n3';
 import type { NamedNode, Quad } from 'rdf-js';
 import type { Representation } from '../../ldp/representation/Representation';
@@ -15,7 +16,7 @@ import { isContainerIdentifier, joinFilePath } from '../../util/PathUtil';
 import { parseQuads, pushQuad, serializeQuads } from '../../util/QuadUtil';
 import { generateContainmentQuads, generateResourceQuads } from '../../util/ResourceUtil';
 import { toLiteral } from '../../util/TermUtil';
-import { AS, CONTENT_TYPE, DC, LDP, POSIX, RDF, XSD } from '../../util/Vocabularies';
+import { IPFS, CONTENT_TYPE, DC, LDP, POSIX, RDF, XSD } from '../../util/Vocabularies';
 import type { IPFSHelper, IPFSStats } from '../ipfs/IpfsHelper';
 import type { FileIdentifierMapper, ResourceLink } from '../mapping/FileIdentifierMapper';
 import type { DataAccessor } from './DataAccessor';
@@ -371,7 +372,7 @@ export class IpfsAccessor implements DataAccessor {
 
   private generateIpfsQuads(subject: NamedNode, stats: IPFSStats): Quad[] {
     const quads: Quad[] = [];
-    pushQuad(quads, subject, AS.url, stats.cid.toString());
+    pushQuad(quads, subject, IPFS.cid, literal(stats.cid.toString()));
     return quads;
   }
 }

@@ -4,7 +4,7 @@ import { Readable } from 'stream';
 import { namedNode } from '@rdfjs/data-model';
 import type { SystemError } from '../../../../dist';
 import { CONTENT_TYPE } from '../../../../dist';
-import { POSIX, RDF, toLiteral, ConflictHttpError, LDP, XSD, AS } from '../../../../src';
+import { POSIX, RDF, toLiteral, ConflictHttpError, LDP, XSD, IPFS } from '../../../../src';
 import type { Representation } from '../../../../src/ldp/representation/Representation';
 import { RepresentationMetadata } from '../../../../src/ldp/representation/RepresentationMetadata';
 import { IpfsAccessor } from '../../../../src/storage/accessors/IpfsAccessor';

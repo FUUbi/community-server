@@ -116,9 +116,8 @@ export const XSD = createUriAndTermNamespace('http://www.w3.org/2001/XMLSchema#'
   'integer',
 );
 
-export const AS = createUriAndTermNamespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#',
-  // https://www.w3.org/TR/activitystreams-vocabulary/#dfn-url
-  'url',
+export const IPFS = createUriAndTermNamespace('http://ipfs.io/ns/ipfs#',
+  'cid',
 );
 
 // Alias for commonly used types
